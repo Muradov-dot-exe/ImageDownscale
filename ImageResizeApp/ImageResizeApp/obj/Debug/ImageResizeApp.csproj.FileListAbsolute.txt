@@ -8,3 +8,13 @@ C:\Users\Muradov1\ImageResizeApp\ImageResizeApp\ImageResizeApp\bin\Debug\ImageRe
 C:\Users\Muradov1\ImageResizeApp\ImageResizeApp\ImageResizeApp\bin\Debug\ImageResizeApp.pdb
 C:\Users\Muradov1\ImageResizeApp\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.exe
 C:\Users\Muradov1\ImageResizeApp\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.pdb
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.csproj.AssemblyReference.cache
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.Form1.resources
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.Properties.Resources.resources
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.csproj.GenerateResource.cache
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.csproj.CoreCompileInputs.cache
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.exe
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\obj\Debug\ImageResizeApp.pdb
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\bin\Debug\ImageResizeApp.exe.config
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\bin\Debug\ImageResizeApp.exe
+C:\Users\Muradov1\Github\ImageDownscale\ImageResizeApp\ImageResizeApp\bin\Debug\ImageResizeApp.pdb

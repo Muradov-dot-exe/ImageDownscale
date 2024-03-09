@@ -4,6 +4,8 @@ using System.Drawing.Imaging;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
+
 
 namespace ImageResizeApp
 {
@@ -150,26 +152,23 @@ namespace ImageResizeApp
 
         private Bitmap DownscaleBetterQuality(Bitmap sourceImage, double downscaleFactor)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             int newWidth = Math.Max(1, (int)(sourceImage.Width * downscaleFactor / 100));
             int newHeight = Math.Max(1, (int)(sourceImage.Height * downscaleFactor / 100));
 
             Bitmap resultImage = new Bitmap(newWidth, newHeight);
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             BitmapData sourceData = sourceImage.LockBits(new Rectangle(0, 0, sourceImage.Width, sourceImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             BitmapData resultData = resultImage.LockBits(new Rectangle(0, 0, resultImage.Width, resultImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
-            unsafe
+            for (int x = 0; x < newWidth; x++)
             {
-                for (int x = 0; x < newWidth; x++)
+                for (int y = 0; y < newHeight; y++)
                 {
-                    for (int y = 0; y < newHeight; y++)
-                    {
-                        Color averagedColor = AveragePixels(sourceData, x, y, downscaleFactor);
-                        SetPixel(resultData, x, y, averagedColor);
-                    }
+                    Color averagedColor = AveragePixels(sourceData, x, y, downscaleFactor);
+                    SetPixel(resultData, x, y, averagedColor);
                 }
             }
 
@@ -178,6 +177,8 @@ namespace ImageResizeApp
 
             stopwatch.Stop();
             long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+            Console.WriteLine($"Better Quality Time: {elapsedMilliseconds} ms");
 
             return resultImage;
         }
@@ -257,6 +258,8 @@ namespace ImageResizeApp
 
             Bitmap resultImage = new Bitmap(newWidth, newHeight);
 
+            List<Task> tasks = new List<Task>();
+
             BitmapData sourceData = sourceImage.LockBits(new Rectangle(0, 0, sourceImage.Width, sourceImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             BitmapData resultData = resultImage.LockBits(new Rectangle(0, 0, resultImage.Width, resultImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
@@ -264,10 +267,18 @@ namespace ImageResizeApp
             {
                 for (int y = 0; y < newHeight; y++)
                 {
-                    Color weightedColor = ComputeWeightedAverageLanczos(sourceData, x, y, downscaleFactor);
-                    SetPixel(resultData, x, y, weightedColor);
+                    int currentX = x;
+                    int currentY = y;
+
+                    tasks.Add(Task.Run(() =>
+                    {
+                        Color weightedColor = ComputeWeightedAverageLanczos(sourceData, currentX, currentY, downscaleFactor);
+                        SetPixel(resultData, currentX, currentY, weightedColor);
+                    }));
                 }
             }
+
+            Task.WaitAll(tasks.ToArray());
 
             sourceImage.UnlockBits(sourceData);
             resultImage.UnlockBits(resultData);
@@ -277,6 +288,7 @@ namespace ImageResizeApp
 
             return resultImage;
         }
+
         private async Task<Tuple<Bitmap, long>> DownscaleParallel(Bitmap sourceImage, double downscaleFactor)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -297,17 +309,31 @@ namespace ImageResizeApp
             BitmapData sourceData = sourceImage.LockBits(new Rectangle(0, 0, sourceImage.Width, sourceImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             BitmapData resultData = resultImage.LockBits(new Rectangle(0, 0, resultImage.Width, resultImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
-            await Task.Run(() =>
+            List<Task> tasks = new List<Task>();
+            object lockObject = new object();
+
+            for (int x = 0; x < newWidth; x++)
             {
-                Parallel.For(0, newWidth, x =>
+                int xCopy = x; // Create a copy of x to avoid closure issues
+                tasks.Add(Task.Run(() =>
                 {
                     for (int y = 0; y < newHeight; y++)
                     {
-                        Color weightedColor = ComputeWeightedAverageLanczos(sourceData, x, y, downscaleFactor);
-                        SetPixel(resultData, x, y, weightedColor);
+                        Color weightedColor;
+                        lock (lockObject)
+                        {
+                            weightedColor = ComputeWeightedAverageLanczos(sourceData, xCopy, y, downscaleFactor);
+                        }
+
+                        lock (resultData)
+                        {
+                            SetPixel(resultData, xCopy, y, weightedColor);
+                        }
                     }
-                });
-            });
+                }));
+            }
+
+            await Task.WhenAll(tasks);
 
             sourceImage.UnlockBits(sourceData);
             resultImage.UnlockBits(resultData);
